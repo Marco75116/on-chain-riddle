@@ -8,6 +8,7 @@ type Riddle @entity {
   numberRiddle: Int!
   winnerId: ID
   winner: Wallet
+  answerAttempts: [AnswerAttempt!]! @derivedFrom(field: "riddle")
 }
 
 type GlobalStats @entity {
@@ -19,4 +20,17 @@ type Wallet @entity {
   "User address"
   id: ID!
   winRiddles: [Riddle!]! @derivedFrom(field: "winner")
+  answerAttempts: [AnswerAttempt!]! @derivedFrom(field: "user")
+}
+
+type AnswerAttempt @entity {
+  id: ID!
+  riddleId: ID
+  riddle: Riddle
+  userId: ID!
+  user: Wallet!
+  answer: String!
+  numberAttempt: Int
+  correct: Boolean!
+  createdAt: BigInt!
 }

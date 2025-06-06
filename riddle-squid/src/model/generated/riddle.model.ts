@@ -1,5 +1,6 @@
-import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, StringColumn as StringColumn_, BigIntColumn as BigIntColumn_, IntColumn as IntColumn_, ManyToOne as ManyToOne_, Index as Index_} from "@subsquid/typeorm-store"
+import {Entity as Entity_, Column as Column_, PrimaryColumn as PrimaryColumn_, StringColumn as StringColumn_, BigIntColumn as BigIntColumn_, IntColumn as IntColumn_, ManyToOne as ManyToOne_, Index as Index_, OneToMany as OneToMany_} from "@subsquid/typeorm-store"
 import {Wallet} from "./wallet.model"
+import {AnswerAttempt} from "./answerAttempt.model"
 
 @Entity_()
 export class Riddle {
@@ -34,4 +35,7 @@ export class Riddle {
     @Index_()
     @ManyToOne_(() => Wallet, {nullable: true})
     winner!: Wallet | undefined | null
+
+    @OneToMany_(() => AnswerAttempt, e => e.riddle)
+    answerAttempts!: AnswerAttempt[]
 }

@@ -4,28 +4,36 @@ import * as riddleAbi from "./abi/riddle";
 import {
   handleAnswerAttempt,
   handleRiddleSet,
-  handleWinner,
+  handleTxAnswerAttempt,
 } from "./mappings/riddle";
 import { initialiazeGlobalStats } from "./utils/entities/globalstats";
 
 const RIDDLE_CONTRACT_ADDRESS = "0x2e70b3109ccd31256e9cf4596eeb1bc23c9b2f3c";
 
+const RIDDLE_START_BLOCK = 8_486_215;
 const processor = new EvmBatchProcessor()
   .setGateway("https://v2.archive.subsquid.io/network/ethereum-sepolia")
   .setRpcEndpoint("https://rpc.sepolia.ethpandaops.io")
   .setFinalityConfirmation(75)
   .addLog({
-    range: { from: 8_486_215 },
+    range: { from: RIDDLE_START_BLOCK },
     address: [RIDDLE_CONTRACT_ADDRESS],
     topic0: [
       riddleAbi.events.AnswerAttempt.topic,
       riddleAbi.events.RiddleSet.topic,
-      riddleAbi.events.Winner.topic,
     ],
+  })
+  .addTransaction({
+    to: [RIDDLE_CONTRACT_ADDRESS],
+    sighash: [riddleAbi.functions.submitAnswer.sighash],
+    range: { from: RIDDLE_START_BLOCK },
   })
   .setFields({
     log: {
       transactionHash: true,
+    },
+    transaction: {
+      input: true,
     },
   });
 
@@ -38,6 +46,25 @@ processor.run(db, async (ctx) => {
     await initialiazeGlobalStats(ctx);
     handleOnce = true;
   }
+
+  for (let c of ctx.blocks) {
+    for (let txn of c.transactions) {
+      if (txn.to === RIDDLE_CONTRACT_ADDRESS) {
+        const inputData = (txn as any).input || "";
+
+        if (!inputData || !inputData.startsWith("0x")) continue;
+
+        const functionSelector = inputData.slice(0, 10);
+        switch (functionSelector) {
+          case riddleAbi.functions.submitAnswer.sighash:
+            await handleTxAnswerAttempt(ctx, txn);
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  }
   for (let block of ctx.blocks) {
     for (let log of block.logs) {
       if (log.address === RIDDLE_CONTRACT_ADDRESS) {
@@ -47,9 +74,6 @@ processor.run(db, async (ctx) => {
             break;
           case riddleAbi.events.RiddleSet.topic:
             await handleRiddleSet(ctx, log);
-            break;
-          case riddleAbi.events.Winner.topic:
-            await handleWinner(ctx, log);
             break;
           default:
             break;
