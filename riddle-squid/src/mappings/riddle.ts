@@ -1,6 +1,12 @@
 import { Log } from "@subsquid/evm-processor";
 import * as riddleAbi from "../abi/riddle";
-import { AnswerAttempt, GlobalStats, Riddle, Wallet } from "../model";
+import {
+  AnswerAttempt,
+  GlobalStats,
+  Riddle,
+  TriggerNewRiddle,
+  Wallet,
+} from "../model";
 import { ctxType } from "../main";
 import { CHAIN_ID } from "../utils/constants/global.contant";
 import { createWallet } from "./wallet";
@@ -63,6 +69,11 @@ export const handleAnswerAttempt = async (ctx: ctxType, log: Log) => {
     riddle.winnerId = user;
     riddle.winAt = BigInt(log.block.timestamp);
     riddle.answer = answerAttempt.answer;
+
+    const triggerNewRiddle = new TriggerNewRiddle({
+      id: riddle.id,
+    });
+    await ctx.store.insert(triggerNewRiddle);
   }
   answerAttempt.riddleId = riddle.id;
   answerAttempt.numberAttempt = riddle.totalAttempts;

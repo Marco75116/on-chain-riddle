@@ -34,3 +34,7 @@ type AnswerAttempt @entity {
   correct: Boolean!
   createdAt: BigInt!
 }
+
+type TriggerNewRiddle @entity {
+  id: ID!
+}
