@@ -7,3 +7,8 @@ type Riddle @entity {
   totalAttempts: Int!
   numberRiddle: Int!
 }
+
+type GlobalStats @entity {
+  id: ID!
+  totalRiddles: Int!
+}

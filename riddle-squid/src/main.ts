@@ -1,6 +1,8 @@
-import { EvmBatchProcessor } from "@subsquid/evm-processor";
-import { TypeormDatabase } from "@subsquid/typeorm-store";
+import { DataHandlerContext, EvmBatchProcessor } from "@subsquid/evm-processor";
+import { Store, TypeormDatabase } from "@subsquid/typeorm-store";
 import * as riddleAbi from "./abi/riddle";
+import { handleRiddleSet } from "./mappings/riddle";
+import { initialiazeGlobalStats } from "./utils/entities/globalstats";
 
 const RIDDLE_CONTRACT_ADDRESS = "0x2e70b3109ccd31256e9cf4596eeb1bc23c9b2f3c";
 
@@ -25,7 +27,13 @@ const processor = new EvmBatchProcessor()
 
 const db = new TypeormDatabase({ supportHotBlocks: true });
 
+let handleOnce = false;
+
 processor.run(db, async (ctx) => {
+  if (!handleOnce) {
+    await initialiazeGlobalStats(ctx);
+    handleOnce = true;
+  }
   for (let block of ctx.blocks) {
     for (let log of block.logs) {
       if (log.address === RIDDLE_CONTRACT_ADDRESS) {
@@ -33,6 +41,7 @@ processor.run(db, async (ctx) => {
           case riddleAbi.events.AnswerAttempt.topic:
             break;
           case riddleAbi.events.RiddleSet.topic:
+            await handleRiddleSet(ctx, log);
             break;
           case riddleAbi.events.Winner.topic:
             break;
@@ -43,3 +52,12 @@ processor.run(db, async (ctx) => {
     }
   }
 });
+
+export type ctxType = DataHandlerContext<
+  Store,
+  {
+    log: {
+      transactionHash: true;
+    };
+  }
+>;
