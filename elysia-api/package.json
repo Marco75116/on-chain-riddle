@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "elysia": "latest",
+    "openai": "^5.1.1",
     "viem": "^2.30.6"
   },
   "devDependencies": {
