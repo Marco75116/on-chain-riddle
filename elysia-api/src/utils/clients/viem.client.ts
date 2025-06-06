@@ -1,4 +1,4 @@
-import { createWalletClient, http } from "viem";
+import { createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { sepolia } from "viem/chains";
 
@@ -12,6 +12,11 @@ const account = privateKeyToAccount(botPrivateKey);
 
 export const botViemClient = createWalletClient({
   account,
+  chain: sepolia,
+  transport: http(),
+});
+
+export const publicClient = createPublicClient({
   chain: sepolia,
   transport: http(),
 });

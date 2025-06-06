@@ -1,0 +1,2 @@
+export const RIDDLE_CONTRACT_ADDRESS =
+  "0x2e70b3109ccd31256e9cf4596eeb1bc23c9b2f3c";
