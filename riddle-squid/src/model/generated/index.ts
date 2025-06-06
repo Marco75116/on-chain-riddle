@@ -1,1 +1,1 @@
-export * from "./usdcTransfer.model"
+export * from "./riddle.model"

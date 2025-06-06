@@ -1,8 +1,9 @@
-type UsdcTransfer @entity {
+type Riddle @entity {
   id: ID!
-  block: Int!
-  from: String! @index
-  to: String! @index
-  value: BigInt!
-  txnHash: String! @index
+  riddle: String!
+  answer: String
+  winAt: BigInt
+  createdAt: BigInt!
+  totalAttempts: Int!
+  numberRiddle: Int!
 }
