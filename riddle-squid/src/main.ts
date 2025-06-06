@@ -1,7 +1,11 @@
 import { DataHandlerContext, EvmBatchProcessor } from "@subsquid/evm-processor";
 import { Store, TypeormDatabase } from "@subsquid/typeorm-store";
 import * as riddleAbi from "./abi/riddle";
-import { handleRiddleSet, handleWinner } from "./mappings/riddle";
+import {
+  handleAnswerAttempt,
+  handleRiddleSet,
+  handleWinner,
+} from "./mappings/riddle";
 import { initialiazeGlobalStats } from "./utils/entities/globalstats";
 
 const RIDDLE_CONTRACT_ADDRESS = "0x2e70b3109ccd31256e9cf4596eeb1bc23c9b2f3c";
@@ -39,6 +43,7 @@ processor.run(db, async (ctx) => {
       if (log.address === RIDDLE_CONTRACT_ADDRESS) {
         switch (log.topics[0]) {
           case riddleAbi.events.AnswerAttempt.topic:
+            await handleAnswerAttempt(ctx, log);
             break;
           case riddleAbi.events.RiddleSet.topic:
             await handleRiddleSet(ctx, log);

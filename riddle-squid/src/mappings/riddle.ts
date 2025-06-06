@@ -57,3 +57,25 @@ export const handleWinner = async (ctx: ctxType, log: Log) => {
 
   await ctx.store.upsert(riddle);
 };
+
+export const handleAnswerAttempt = async (ctx: ctxType, log: Log) => {
+  const { user, correct } = riddleAbi.events.AnswerAttempt.decode(log);
+
+  const globalStats = await ctx.store.get(GlobalStats, CHAIN_ID.toString());
+  if (!globalStats) {
+    console.log("Global stats not found");
+    return;
+  }
+
+  const riddle = await ctx.store.get(
+    Riddle,
+    globalStats.totalRiddles.toString()
+  );
+  if (!riddle) {
+    console.log("handleAnswerAttempt Riddle not found");
+    return;
+  }
+
+  riddle.totalAttempts++;
+  await ctx.store.upsert(riddle);
+};
