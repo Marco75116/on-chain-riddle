@@ -6,9 +6,17 @@ type Riddle @entity {
   createdAt: BigInt!
   totalAttempts: Int!
   numberRiddle: Int!
+  winnerId: ID
+  winner: Wallet
 }
 
 type GlobalStats @entity {
   id: ID!
   totalRiddles: Int!
+}
+
+type Wallet @entity {
+  "User address"
+  id: ID!
+  winRiddles: [Riddle!]! @derivedFrom(field: "winner")
 }

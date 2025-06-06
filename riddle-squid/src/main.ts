@@ -1,7 +1,7 @@
 import { DataHandlerContext, EvmBatchProcessor } from "@subsquid/evm-processor";
 import { Store, TypeormDatabase } from "@subsquid/typeorm-store";
 import * as riddleAbi from "./abi/riddle";
-import { handleRiddleSet } from "./mappings/riddle";
+import { handleRiddleSet, handleWinner } from "./mappings/riddle";
 import { initialiazeGlobalStats } from "./utils/entities/globalstats";
 
 const RIDDLE_CONTRACT_ADDRESS = "0x2e70b3109ccd31256e9cf4596eeb1bc23c9b2f3c";
@@ -44,6 +44,7 @@ processor.run(db, async (ctx) => {
             await handleRiddleSet(ctx, log);
             break;
           case riddleAbi.events.Winner.topic:
+            await handleWinner(ctx, log);
             break;
           default:
             break;
