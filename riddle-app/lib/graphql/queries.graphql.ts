@@ -13,3 +13,21 @@ export const GET_RIDDLES = gql`
     }
   }
 `;
+
+export const GET_LASTANSWER_ATTEMPTS = gql`
+  query GetLastAnswerAttempts($riddleId: String!) {
+    answerAttempts(
+      orderBy: createdAt_DESC
+      limit: 5
+      where: { riddleId_eq: $riddleId }
+    ) {
+      id
+      answer
+      correct
+      createdAt
+      numberAttempt
+      riddleId
+      userId
+    }
+  }
+`;

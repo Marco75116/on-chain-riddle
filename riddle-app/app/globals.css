@@ -35,7 +35,7 @@
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
+  --card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -121,9 +121,6 @@
   }
 }
 
-
-
-
 .center {
   display: flex;
   justify-content: center;    
@@ -135,4 +132,36 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+/* Enable scroll functionality but hide scrollbars */
+html, body {
+  height: 100%;
+  overflow-y: auto; /* Allow vertical scrolling */
+  overflow-x: hidden; /* Hide horizontal scrollbar */
+}
+
+/* Hide scrollbars for webkit browsers (Chrome, Safari, Edge) */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+/* Hide scrollbars for Firefox */
+html {
+  scrollbar-width: none;
+}
+
+body {
+  scrollbar-width: none;
+}
+
+/* Hide scrollbars for IE and Edge legacy */
+html {
+  -ms-overflow-style: none;
+}
+
+body {
+  -ms-overflow-style: none;
 }
