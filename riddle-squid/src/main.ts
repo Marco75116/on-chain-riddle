@@ -13,7 +13,7 @@ const RIDDLE_CONTRACT_ADDRESS = "0x2e70b3109ccd31256e9cf4596eeb1bc23c9b2f3c";
 const RIDDLE_START_BLOCK = 8_486_215;
 const processor = new EvmBatchProcessor()
   .setGateway("https://v2.archive.subsquid.io/network/ethereum-sepolia")
-  .setRpcEndpoint("https://rpc.sepolia.ethpandaops.io")
+  .setRpcEndpoint(process.env.RPC_SEPOLIA_URL)
   .setFinalityConfirmation(75)
   .addLog({
     range: { from: RIDDLE_START_BLOCK },

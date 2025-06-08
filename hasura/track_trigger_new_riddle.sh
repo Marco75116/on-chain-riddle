@@ -30,3 +30,23 @@ curl -X POST \
 echo ""
 echo "✅ trigger_new_riddle table tracking request sent!"
 
+echo ""
+echo "🔄 Tracking 'answer_attempt' table in Hasura..."
+
+curl -X POST \
+  "$HASURA_METADATA_ENDPOINT" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "type": "pg_track_table",
+    "args": {
+      "source": "default",
+      "table": {
+        "name": "answer_attempt",
+        "schema": "public"
+      }
+    }
+  }'
+
+echo ""
+echo "✅ answer_attempt table tracking request sent!"
+echo "🎉 All tables have been tracked successfully!"

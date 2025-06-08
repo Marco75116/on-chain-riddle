@@ -21,6 +21,12 @@ if [ -z "$HASURA_WEBHOOK_URL" ]; then
     exit 1
 fi
 
+if [ -z "$HASURA_WEBHOOK_URL_ATTEMPT" ]; then
+    echo "❌ Error: HASURA_WEBHOOK_URL_ATTEMPT is not set or empty in .env file!"
+    echo "💡 Please add HASURA_WEBHOOK_URL_ATTEMPT=http://host.docker.internal:3000/answer_attempt to your .env file"
+    exit 1
+fi
+
 echo "🎯 Creating event trigger for trigger_new_riddle inserts..."
 echo "📡 Metadata endpoint: $HASURA_METADATA_ENDPOINT"
 echo "🔗 Webhook URL: $HASURA_WEBHOOK_URL"
@@ -51,5 +57,37 @@ curl -X POST \
   }"
 
 echo ""
-echo "✅ Event trigger creation request sent!"
+echo "✅ Event trigger for trigger_new_riddle creation request sent!"
 
+echo ""
+echo "🎯 Creating event trigger for answer_attempt inserts..."
+echo "📡 Metadata endpoint: $HASURA_METADATA_ENDPOINT"
+echo "🔗 Webhook URL: $HASURA_WEBHOOK_URL_ATTEMPT"
+
+curl -X POST \
+  "$HASURA_METADATA_ENDPOINT" \
+  -H 'Content-Type: application/json' \
+  -d "{
+    \"type\": \"pg_create_event_trigger\",
+    \"args\": {
+      \"name\": \"answer_attempt_trigger\",
+      \"source\": \"default\",
+      \"table\": {
+        \"name\": \"answer_attempt\",
+        \"schema\": \"public\"
+      },
+      \"webhook\": \"$HASURA_WEBHOOK_URL_ATTEMPT\",
+      \"insert\": {
+        \"columns\": \"*\"
+      },
+      \"retry_conf\": {
+        \"num_retries\": 0,
+        \"interval_sec\": 10,
+        \"timeout_sec\": 60
+      }
+    }
+  }"
+
+echo ""
+echo "✅ Event trigger for answer_attempt creation request sent!"
+echo "🎉 All event triggers have been created successfully!"
