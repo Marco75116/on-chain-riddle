@@ -14,10 +14,6 @@ export default function Riddle() {
     error: answersError,
   } = useLastAnswerAttempts(riddles?.[0]?.id);
 
-  const handleSubmitAnswer = (answer: string) => {
-    console.log("Answer submitted:", answer);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -50,10 +46,7 @@ export default function Riddle() {
     <div className="min-h-screen flex flex-col items-center justify-start space-y-6 p-4">
       {currentRiddle && <RiddleStatsCard riddle={currentRiddle} />}
 
-      <RiddleQuestionCard
-        riddle={currentRiddle}
-        onSubmitAnswer={handleSubmitAnswer}
-      />
+      <RiddleQuestionCard riddle={currentRiddle} />
 
       <AnswerHistoryCard
         answerAttempts={answerAttempts}

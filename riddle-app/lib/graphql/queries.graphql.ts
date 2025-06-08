@@ -31,3 +31,17 @@ export const GET_LASTANSWER_ATTEMPTS = gql`
     }
   }
 `;
+
+export const GET_ANSWER_ATTEMPTS = gql`
+  query GetAnswerAttempts($riddleId: String!, $answer: String!) {
+    answerAttempts(where: { riddleId_eq: $riddleId, answer_eq: $answer }) {
+      id
+      answer
+      riddleId
+      userId
+      correct
+      numberAttempt
+      createdAt
+    }
+  }
+`;

@@ -48,7 +48,7 @@ export default function AnswerHistoryCard({
                 Previously Submitted Answers
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                {answerAttempts?.length || 0} answer attempts
+                {answerAttempts?.length || 0} last answer attempts
               </p>
             </div>
           </AccordionTrigger>

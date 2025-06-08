@@ -10,13 +10,10 @@ if (!graphqlUrl) {
   );
 }
 
-console.log("GraphQL URL:", graphqlUrl);
-
 const httpLink = createHttpLink({
   uri: graphqlUrl,
 });
 
-// Error handling link
 const errorLink = onError(
   ({ graphQLErrors, networkError, operation, forward }) => {
     if (graphQLErrors) {

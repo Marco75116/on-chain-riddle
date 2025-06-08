@@ -11,24 +11,30 @@ import {
 } from "@/components/ui/card";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useLazyQuery } from "@apollo/client";
 import { toast } from "sonner";
 import {
   RIDDLE_CONTRACT_ADDRESS,
   RIDDLE_CONTRACT_ABI,
 } from "@/lib/constants/riddle.constant";
+import { GET_ANSWER_ATTEMPTS } from "@/lib/graphql/queries.graphql";
 
 interface RiddleData {
   riddle: string;
+  id: string;
+  numberRiddle: number;
+  totalAttempts: number;
+  createdAt: string;
+  answer?: string;
+  winAt?: string;
 }
 
 interface RiddleQuestionCardProps {
   riddle?: RiddleData;
-  onSubmitAnswer: (answer: string) => void;
 }
 
 export default function RiddleQuestionCard({
   riddle,
-  onSubmitAnswer,
 }: RiddleQuestionCardProps) {
   const [answer, setAnswer] = useState("");
 
@@ -46,6 +52,27 @@ export default function RiddleQuestionCard({
   } = useWaitForTransactionReceipt({
     hash,
   });
+
+  const [checkAnswerAttempts, { loading: isCheckingAnswer }] = useLazyQuery(
+    GET_ANSWER_ATTEMPTS,
+    {
+      onCompleted: (data) => {
+        if (data?.answerAttempts?.length > 0) {
+          toast.error("Answer already submitted!", {
+            description:
+              "This answer has been previously submitted. Try a different one.",
+            duration: 4000,
+          });
+        } else {
+          submitToContract();
+        }
+      },
+      onError: (error) => {
+        console.error("Error checking answer attempts:", error);
+        toast.error("Failed to check answer history. Please try again.");
+      },
+    }
+  );
 
   useEffect(() => {
     if (hash) {
@@ -81,12 +108,7 @@ export default function RiddleQuestionCard({
     }
   }, [isConfirming, isConfirmed]);
 
-  const handleSubmit = async () => {
-    if (!answer.trim()) {
-      toast.error("Please enter an answer");
-      return;
-    }
-
+  const submitToContract = async () => {
     try {
       await writeContract({
         address: RIDDLE_CONTRACT_ADDRESS,
@@ -95,13 +117,38 @@ export default function RiddleQuestionCard({
         args: [answer.trim()],
       });
 
-      onSubmitAnswer(answer);
-
       toast.success("Answer submitted successfully!");
       setAnswer("");
     } catch (error) {
       console.error("Error submitting answer:", error);
       toast.error("Failed to submit answer. Please try again.");
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!answer.trim()) {
+      toast.error("Please enter an answer");
+      return;
+    }
+
+    if (!riddle?.id) {
+      toast.error("Riddle ID not available. Please refresh the page.");
+      return;
+    }
+
+    try {
+      console.log(
+        "Checking answer for riddle ID:",
+        riddle.id,
+        "Answer:",
+        answer.trim()
+      );
+      await checkAnswerAttempts({
+        variables: { riddleId: riddle.id, answer: answer.trim() },
+      });
+    } catch (error) {
+      console.error("Error checking answer:", error);
+      toast.error("Failed to validate answer. Please try again.");
     }
   };
 
@@ -113,7 +160,7 @@ export default function RiddleQuestionCard({
     toast.error(`Transaction error: ${receiptError.message}`);
   }
 
-  const isLoading = isWritePending || isConfirming;
+  const isLoading = isWritePending || isConfirming || isCheckingAnswer;
 
   return (
     <Card className="w-full max-w-2xl">
@@ -151,7 +198,11 @@ export default function RiddleQuestionCard({
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isWritePending ? "Submitting..." : "Confirming..."}
+                {isCheckingAnswer
+                  ? "Checking..."
+                  : isWritePending
+                  ? "Submitting..."
+                  : "Confirming..."}
               </>
             ) : (
               "Send Answer"
