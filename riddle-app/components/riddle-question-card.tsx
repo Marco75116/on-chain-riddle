@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,7 +9,13 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Loader2 } from "lucide-react";
+import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { toast } from "sonner";
+import {
+  RIDDLE_CONTRACT_ADDRESS,
+  RIDDLE_CONTRACT_ABI,
+} from "@/lib/constants/riddle.constant";
 
 interface RiddleData {
   riddle: string;
@@ -26,10 +32,88 @@ export default function RiddleQuestionCard({
 }: RiddleQuestionCardProps) {
   const [answer, setAnswer] = useState("");
 
-  const handleSubmit = () => {
-    onSubmitAnswer(answer);
-    setAnswer("");
+  const {
+    writeContract,
+    isPending: isWritePending,
+    data: hash,
+    error: writeError,
+  } = useWriteContract();
+
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({
+    hash,
+  });
+
+  useEffect(() => {
+    if (hash) {
+      const shortHash = `${hash.slice(0, 6)}...${hash.slice(-4)}`;
+      toast.success("Transaction submitted!", {
+        description: (
+          <div className="flex items-center gap-2">
+            <span>Hash: {shortHash}</span>
+            <a
+              href={`https://eth-sepolia.blockscout.com/tx/${hash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline"
+            >
+              View on Blockscout
+            </a>
+          </div>
+        ),
+        duration: 5000,
+      });
+    }
+  }, [hash]);
+
+  useEffect(() => {
+    if (isConfirming) {
+      toast.loading("Waiting for confirmation...", {
+        id: "confirmation-toast",
+      });
+    } else if (isConfirmed) {
+      toast.success("Transaction confirmed!", {
+        id: "confirmation-toast",
+      });
+    }
+  }, [isConfirming, isConfirmed]);
+
+  const handleSubmit = async () => {
+    if (!answer.trim()) {
+      toast.error("Please enter an answer");
+      return;
+    }
+
+    try {
+      await writeContract({
+        address: RIDDLE_CONTRACT_ADDRESS,
+        abi: RIDDLE_CONTRACT_ABI,
+        functionName: "submitAnswer",
+        args: [answer.trim()],
+      });
+
+      onSubmitAnswer(answer);
+
+      toast.success("Answer submitted successfully!");
+      setAnswer("");
+    } catch (error) {
+      console.error("Error submitting answer:", error);
+      toast.error("Failed to submit answer. Please try again.");
+    }
   };
+
+  if (writeError) {
+    toast.error(`Transaction failed: ${writeError.message}`);
+  }
+
+  if (receiptError) {
+    toast.error(`Transaction error: ${receiptError.message}`);
+  }
+
+  const isLoading = isWritePending || isConfirming;
 
   return (
     <Card className="w-full max-w-2xl">
@@ -52,9 +136,26 @@ export default function RiddleQuestionCard({
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
             className="flex-1"
+            disabled={isLoading}
+            onKeyPress={(e) => {
+              if (e.key === "Enter" && !isLoading) {
+                handleSubmit();
+              }
+            }}
           />
-          <Button onClick={handleSubmit} className="cursor-pointer">
-            Send Answer
+          <Button
+            onClick={handleSubmit}
+            className="cursor-pointer"
+            disabled={isLoading || !answer.trim()}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isWritePending ? "Submitting..." : "Confirming..."}
+              </>
+            ) : (
+              "Send Answer"
+            )}
           </Button>
         </div>
       </CardContent>
@@ -65,6 +166,12 @@ export default function RiddleQuestionCard({
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 transition-colors"
+          onClick={() => {
+            toast("Viewing smart contract", {
+              description: "Opening contract details on Blockscout",
+              duration: 2000,
+            });
+          }}
         >
           <ExternalLink size={16} />
           <span>Check smart-contract</span>
