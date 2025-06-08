@@ -6,7 +6,7 @@ import { AnswerAttempt } from "./schema.graphql";
 
 export const GET_ANSWER_ATTEMPTS = gql`
   query GetAnswerAttempts($answer: String!) {
-    answerAttempts(where: { answer_eq: $answer }) {
+    answerAttempts(where: { answer_eq: $answer, correct_eq: true }) {
       id
       answer
       riddleId
