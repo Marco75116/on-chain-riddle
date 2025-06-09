@@ -10,7 +10,11 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { ExternalLink, Loader2 } from "lucide-react";
-import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import {
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useAccount,
+} from "wagmi";
 import { useLazyQuery } from "@apollo/client";
 import { toast } from "sonner";
 import {
@@ -37,7 +41,7 @@ export default function RiddleQuestionCard({
   riddle,
 }: RiddleQuestionCardProps) {
   const [answer, setAnswer] = useState("");
-
+  const { isConnected } = useAccount();
   const {
     writeContract,
     isPending: isWritePending,
@@ -193,7 +197,7 @@ export default function RiddleQuestionCard({
           <Button
             onClick={handleSubmit}
             className="cursor-pointer"
-            disabled={isLoading || !answer.trim()}
+            disabled={isLoading || !answer.trim() || !isConnected}
           >
             {isLoading ? (
               <>
