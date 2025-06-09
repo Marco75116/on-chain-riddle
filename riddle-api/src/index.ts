@@ -40,7 +40,7 @@ const app = new Elysia()
       ws.send("hello " + message);
     },
   })
-  .listen(3000);
+  .listen(process.env.RIDDLE_API_PORT || 3000);
 
 console.log(
   `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
