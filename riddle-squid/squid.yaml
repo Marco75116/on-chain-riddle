@@ -1,16 +1,17 @@
 manifestVersion: subsquid.io/v0.1
-name: showcase01-all-usdc-transfers
+name: riddle-squid
 version: 1
-description: |-
-  The very first evm squid from manifest
-build:
-
+description: Marcopoloo
+build: {}
 deploy:
   addons:
-    postgres:
-    rpc:
-      - eth.http # RPC proxy URL will be supplied via the RPC_ETH_HTTP env variable
+    postgres: {}
   processor:
-    cmd: [ "sqd", "process:prod" ]
+    - name: processor
+      cmd:
+        - sqd
+        - process:prod
   api:
-    cmd: [ "sqd", "serve:prod" ]
+    cmd:
+      - sqd
+      - serve:prod

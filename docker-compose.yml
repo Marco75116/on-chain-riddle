@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  riddle-squid:
+    build: ./riddle-squid
+    ports:
+      - "${GQL_PORT}:${GQL_PORT}"
+    environment:
+      - DB_URL=${DB_URL}
+      - GQL_PORT=${GQL_PORT}
+      - RPC_SEPOLIA_URL=${RPC_SEPOLIA_URL}
+    restart: unless-stopped
