@@ -4,6 +4,6 @@ export const copyToClipboard = async (text?: string): Promise<void> => {
       return navigator.clipboard.writeText(text);
     }
   } catch (error) {
-    throw new Error("Error while copying address");
+    console.error("Error while copying address", error);
   }
 };
