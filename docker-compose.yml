@@ -20,6 +20,18 @@ services:
     depends_on:
       - riddle-squid
 
+  riddle-app:
+    build:
+      context: ./riddle-app
+      args:
+        NEXT_PUBLIC_GRAPHQL_URL: http://localhost:4350/graphql
+    ports:
+      - "${RIDDLE_APP_PORT:-3001}:3001"
+    environment:
+      - NEXT_PUBLIC_GRAPHQL_URL=http://localhost:4350/graphql
+    depends_on:
+      - riddle-squid
+
   hasura:
     build: ./hasura
     ports:
