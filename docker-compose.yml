@@ -2,12 +2,23 @@ services:
   riddle-squid:
     build: ./riddle-squid
     ports:
-      - "${GQL_PORT}:${GQL_PORT}"
+      - "${GQL_PORT:-4350}:4350"
     environment:
       - DB_URL=${DB_URL}
-      - GQL_PORT=${GQL_PORT}
+      - GQL_PORT=${GQL_PORT:-4350}
       - RPC_SEPOLIA_URL=${RPC_SEPOLIA_URL}
-    restart: unless-stopped
+
+  riddle-api:
+    build: ./riddle-api
+    ports:
+      - "${RIDDLE_API_PORT:-3000}:3000"
+    environment:
+      - RIDDLE_API_PORT=${RIDDLE_API_PORT:-3000}
+      - BOT_PRIVATE_KEY=${BOT_PRIVATE_KEY}
+      - OPENIA_API_KEY=${OPENIA_API_KEY}
+      - GRAPHQL_URL=http://riddle-squid:4350/graphql
+    depends_on:
+      - riddle-squid
 
   hasura:
     build: ./hasura
@@ -17,6 +28,9 @@ services:
       - HASURA_GRAPHQL_DATABASE_URL=${DB_URL}
       - HASURA_GRAPHQL_ENABLE_CONSOLE=true
       - HASURA_GRAPHQL_DEV_MODE=true
-      - HASURA_GRAPHQL_ENABLED_LOG_TYPES=startup,http-log,webhook-log,websocket-log,query-log
+      - HASURA_GRAPHQL_ENABLED_LOG_TYPES=startup,http-log,query-log,websocket-log,webhook-log
       - HASURA_PORT=${HASURA_PORT:-8080}
-    restart: unless-stopped
+      - RIDDLE_API_PORT=${RIDDLE_API_PORT:-3000}
+    depends_on:
+      - riddle-squid
+      - riddle-api
