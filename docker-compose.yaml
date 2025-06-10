@@ -2,7 +2,7 @@ services:
   riddle-squid:
     build: ./riddle-squid
     ports:
-      - "${GQL_PORT:-4350}:4350"
+      - "${GQL_PORT:-4350}:${GQL_PORT:-4350}"
     environment:
       - DB_URL=${DB_URL}
       - GQL_PORT=${GQL_PORT:-4350}
@@ -16,7 +16,7 @@ services:
       - RIDDLE_API_PORT=${RIDDLE_API_PORT:-3000}
       - BOT_PRIVATE_KEY=${BOT_PRIVATE_KEY}
       - OPENIA_API_KEY=${OPENIA_API_KEY}
-      - GRAPHQL_URL=http://riddle-squid:4350/graphql
+      - GRAPHQL_URL=http://riddle-squid:${GQL_PORT:-4350}/graphql
     depends_on:
       - riddle-squid
 
@@ -41,7 +41,6 @@ services:
       - HASURA_GRAPHQL_ENABLE_CONSOLE=true
       - HASURA_GRAPHQL_DEV_MODE=true
       - HASURA_GRAPHQL_ENABLED_LOG_TYPES=startup,http-log,query-log,websocket-log,webhook-log
-      - HASURA_PORT=${HASURA_PORT:-8080}
       - RIDDLE_API_PORT=${RIDDLE_API_PORT:-3000}
     depends_on:
       - riddle-squid
