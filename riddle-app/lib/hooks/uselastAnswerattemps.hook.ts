@@ -27,6 +27,12 @@ export function useLastAnswerAttempts(riddleId: string) {
   });
 
   useEffect(() => {
+    if (data?.answerAttempts) {
+      setWsAnswerAttempts(data.answerAttempts);
+    }
+  }, [data?.answerAttempts]);
+
+  useEffect(() => {
     const ws = new WebSocket(WEBSOCKET_URL);
 
     ws.onmessage = (event) => {
@@ -49,11 +55,15 @@ export function useLastAnswerAttempts(riddleId: string) {
     };
   }, []);
 
-  const combinedAttempts =
-    wsAnswerAttempts.length > 0 ? wsAnswerAttempts : data?.answerAttempts || [];
+  // Format the attempts to include proper timestamp and user information
+  const formattedAttempts = wsAnswerAttempts.map((attempt) => ({
+    ...attempt,
+    created_at: attempt.created_at || new Date().getTime(),
+    user_id: attempt.user_id || "Unknown",
+  }));
 
   return {
-    answerAttempts: combinedAttempts,
+    answerAttempts: formattedAttempts,
     loading,
     error,
   };
