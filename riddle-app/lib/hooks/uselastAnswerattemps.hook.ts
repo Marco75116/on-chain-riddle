@@ -2,20 +2,19 @@ import { useQuery } from "@apollo/client";
 import { GET_LASTANSWER_ATTEMPTS } from "../graphql/queries.graphql";
 import { useEffect, useState } from "react";
 import { WEBSOCKET_URL } from "../constants/global.constant";
-
-interface AnswerAttempt {
-  id: string;
-  answer: string;
-  correct: boolean;
-  created_at: number;
-  number_attempt: number | null;
-  riddle_id: string | null;
-  user_id: string;
-}
+import { AnswerAttempt } from "@/lib/types/global.type";
 
 interface WebSocketMessage {
   type: string;
-  data: AnswerAttempt;
+  data: {
+    id: string;
+    answer: string;
+    correct: boolean;
+    created_at: number;
+    number_attempt: number | null;
+    riddle_id: string | null;
+    user_id: string;
+  };
   timestamp: string;
 }
 
@@ -40,7 +39,15 @@ export function useLastAnswerAttempts(riddleId: string) {
 
       if (message.type === "new_attempt") {
         setWsAnswerAttempts((prevAttempts) => {
-          const newAttempts = [message.data, ...prevAttempts];
+          const newAttempt: AnswerAttempt = {
+            id: message.data.id,
+            answer: message.data.answer,
+            isCorrect: message.data.correct,
+            createdAt: message.data.created_at.toString(),
+            userId: message.data.user_id,
+            riddleNumber: message.data.number_attempt || undefined,
+          };
+          const newAttempts = [newAttempt, ...prevAttempts];
           return newAttempts.slice(0, 5);
         });
       }
@@ -55,15 +62,8 @@ export function useLastAnswerAttempts(riddleId: string) {
     };
   }, []);
 
-  // Format the attempts to include proper timestamp and user information
-  const formattedAttempts = wsAnswerAttempts.map((attempt) => ({
-    ...attempt,
-    created_at: attempt.created_at || new Date().getTime(),
-    user_id: attempt.user_id || "Unknown",
-  }));
-
   return {
-    answerAttempts: formattedAttempts,
+    answerAttempts: wsAnswerAttempts,
     loading,
     error,
   };
